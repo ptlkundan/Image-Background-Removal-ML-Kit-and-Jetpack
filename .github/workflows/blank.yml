@@ -1,0 +1,39 @@
+name: Android CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # you can also use windows-latest if needed
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up JDK (Android requires Java 17 for latest Gradle)
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      # 3. Gradle wrapper permissions
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 4. Build debug APK
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug
+
+      # 5. Upload APK artifact
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
