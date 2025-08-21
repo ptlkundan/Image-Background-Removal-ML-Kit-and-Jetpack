@@ -1,42 +1,42 @@
-name: Android CI/CD
+name: Android CI - Direct APK
 
 on:
   push:
     branches:
-      - main   # or your branch
-  pull_request:
+      - main
 
 jobs:
-  build:
+  build-debug-apk:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Java
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: 17
+          cache: gradle
 
+      # 3️⃣ Make gradlew executable
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build APK
+      # 4️⃣ Build debug APK
+      - name: Build Debug APK
         run: ./gradlew assembleDebug
 
+      # 5️⃣ Rename APK (optional) to custom name
       - name: Rename APK
-        run: mv app/build/outputs/apk/debug/app-debug.apk MyApp.apk
+        run: mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/myapp-debug.apk
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      # 6️⃣ Upload APK as GitHub Actions artifact (direct APK, not zip)
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: "MyApp Release v1.0.${{ github.run_number }}"
-          body: |
-            🚀 Auto-generated release from CI/CD
-            ✅ APK built successfully
-          files: MyApp.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: myapp-debug.apk
+          path: app/build/outputs/apk/debug/myapp-debug.apk
